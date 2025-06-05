@@ -1,2 +1,4 @@
 venv
 modelo_beto
+.env
+__pycache__

@@ -1,5 +1,6 @@
 import json
 from pynput import keyboard
+'''from pynput import keyboard
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 from collections import defaultdict
 import torch
@@ -113,3 +114,15 @@ if __name__ == '__main__':
 
     print(phrase)
 #lacasaesdete a1
+#lacasadete a1es'''
+
+from fastapi import FastAPI
+from router.sugerencias_router import router as sugerencias_router
+
+app = FastAPI(title="Scribos API")
+app.include_router(sugerencias_router)
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", reload=True)
+
