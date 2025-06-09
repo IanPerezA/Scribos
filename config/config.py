@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     MODEL_NAME:      str  = "dccuchile/bert-base-spanish-wwm-cased"
     LOCAL_MODEL_DIR: Path = Path("modelo_beto")
     WORDS_FILE:      Path = Path("data/words.txt")
+    INDEX_FILE:      Path = Path("data/index.json")
 
     model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(
         env_file="C:/Users/HP/Documents/repo-scribos/Scribos/.env",       
