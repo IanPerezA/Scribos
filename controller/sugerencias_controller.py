@@ -9,18 +9,18 @@ def get_suggestions(patron: list[str]):
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-def get_complete_suggestion(phrase):
+'''def get_complete_suggestion(phrase):
     try:
         words = phrase.split()
         completed_words = []
 
         for idx, word in enumerate(words):
-            if '-' not in word:
+            if '*' not in word:
                 completed_words.append(word)
                 continue
 
             # Reemplazar cada guion con un token [MASK]
-            num_masks = word.count('-')
+            num_masks = word.count('*')
             mask_string = ' '.join(['[MASK]'] * num_masks)
 
             # Frase con palabra enmascarada
@@ -37,7 +37,7 @@ def get_complete_suggestion(phrase):
             reconstructed = ""
             pred_idx = 0
             for char in word:
-                if char == '-':
+                if char == '*':
                     token = predicted_tokens[pred_idx]
                     # Limpiar subtokens (como ##n)
                     token = token.replace("##", "")
@@ -47,6 +47,37 @@ def get_complete_suggestion(phrase):
                     reconstructed += char
 
             completed_words.append(reconstructed)
+
+        return " ".join(completed_words)
+
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc'''
+    
+from utils.puntaje import predict_masked_word
+
+def get_complete_suggestion(phrase):
+    try:
+        words = phrase.split()
+        completed_words = []
+
+        for word in words:
+            if "*" not in word:
+                completed_words.append(word)
+                continue
+
+            pattern = word
+            masked_phrase = phrase.replace(word, "[MASK]", 1)
+
+            predictions = predict_masked_word(masked_phrase, pattern, top_k=50)
+
+            print("🔍 pattern:", pattern)
+            print("🔍 masked phrase:", masked_phrase)
+            print("🔍 predictions:", predictions)
+
+            if predictions:
+                completed_words.append(predictions[0])  # Top-1
+            else:
+                completed_words.append(word)
 
         return " ".join(completed_words)
 

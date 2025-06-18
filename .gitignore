@@ -2,3 +2,5 @@ venv
 modelo_beto
 .env
 __pycache__
+.vscode
+test.py
