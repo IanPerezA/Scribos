@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     LOCAL_MODEL_DIR: Path = Path("modelo_beto")
     WORDS_FILE:      Path = Path("data/words.txt")
     INDEX_FILE:      Path = Path("data/index.json")
+    DRIVE_MODEL_URL: str = "https://drive.google.com/file/d/14kk86vRe98SzPP2WqZE7wuIN2eT9whVJ"
 
     model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(
         env_file="C:/Users/HP/Documents/repo-scribos/Scribos/.env",       
