@@ -4,3 +4,4 @@ modelo_beto
 __pycache__
 .vscode
 test.py
+model.py
