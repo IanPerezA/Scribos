@@ -5,3 +5,12 @@ __pycache__
 .vscode
 test.py
 model.py
+# Checkpoints u otros modelos grandes
+*.ckpt
+*.bin
+*.pt
+*.pth
+
+# __pycache__ y artefactos de Python
+__pycache__/
+*.py[cod]
