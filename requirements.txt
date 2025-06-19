@@ -1,4 +1,5 @@
 annotated-types==0.7.0
+protobuf>=3.20.3
 anyio==4.9.0
 beautifulsoup4==4.13.4
 certifi==2025.6.15
