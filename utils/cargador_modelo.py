@@ -1,7 +1,7 @@
 import os
 import requests
 from transformers import AutoModelForMaskedLM, AutoTokenizer
-from config import settings
+from config.config import settings
 
 MODEL_FILES = {
     "config.json": "1RgRZJCEw78f5DrkautcCI3URS7ybgsmF",  # config.json
