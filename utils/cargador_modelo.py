@@ -38,19 +38,26 @@ def descargar_modelo_drive():
         raise
 def get_model():
     name = settings.MODEL_NAME
-    local_dir = Path(settings.LOCAL_MODEL_DIR)
+    base_dir = Path(settings.LOCAL_MODEL_DIR)
 
     if name in _MODELO_CACHE:
         return _MODELO_CACHE[name]
 
-    if not local_dir.exists() or not any(local_dir.iterdir()):
+    # Si el directorio no existe o está vacío, descarga el modelo
+    if not base_dir.exists() or not any(base_dir.iterdir()):
         descargar_modelo_drive()
 
-    tokenizer = AutoTokenizer.from_pretrained(local_dir)
-    model = AutoModelForMaskedLM.from_pretrained(local_dir)
+    # Detectar si hay una única subcarpeta (por ejemplo "modelo_beto")
+    subdirs = [d for d in base_dir.iterdir() if d.is_dir()]
+    model_dir = subdirs[0] if len(subdirs) == 1 else base_dir
+
+    # Cargar el modelo desde la ruta detectada
+    tokenizer = AutoTokenizer.from_pretrained(model_dir)
+    model = AutoModelForMaskedLM.from_pretrained(model_dir)
 
     _MODELO_CACHE[name] = (tokenizer, model)
     return tokenizer, model
+
 
 def descargar_desde_drive(file_id: str, destino_local: str):
     url = f"https://drive.google.com/uc?export=download&id={file_id}"
