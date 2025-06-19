@@ -1,18 +1,31 @@
 from pathlib import Path
 from transformers import AutoTokenizer, AutoModelForMaskedLM
-from config import config
 from config.config import settings
 import gdown
 import zipfile
+import os
+import requests
 
 _MODELO_CACHE: dict[str, tuple] = {}
 
 def descargar_modelo_drive():
-    url = settings.DRIVE_MODEL_URL  # Debes definir esta variable en config
+    url = settings.DRIVE_MODEL_URL
     output_zip = "modelo_beto.zip"
+
+    if Path(output_zip).exists():
+        os.remove(output_zip)
+
+    print("Descargando modelo desde Drive...")
     gdown.download(url, output_zip, quiet=False)
-    with zipfile.ZipFile(output_zip, "r") as zip_ref:
-        zip_ref.extractall(settings.LOCAL_MODEL_DIR)
+
+    try:
+        with zipfile.ZipFile(output_zip, "r") as zip_ref:
+            zip_ref.extractall(settings.LOCAL_MODEL_DIR)
+        print("Modelo extraído correctamente.")
+    except zipfile.BadZipFile:
+        print("❌ Archivo ZIP inválido. Eliminando y abortando carga.")
+        os.remove(output_zip)
+        raise
 
 def get_model():
     name = settings.MODEL_NAME
@@ -21,7 +34,7 @@ def get_model():
     if name in _MODELO_CACHE:
         return _MODELO_CACHE[name]
 
-    if not local_dir.exists():
+    if not local_dir.exists() or not any(local_dir.iterdir()):
         descargar_modelo_drive()
 
     tokenizer = AutoTokenizer.from_pretrained(local_dir)
@@ -30,9 +43,6 @@ def get_model():
     _MODELO_CACHE[name] = (tokenizer, model)
     return tokenizer, model
 
-import requests
-
-
 def descargar_desde_drive(file_id: str, destino_local: str):
     url = f"https://drive.google.com/uc?export=download&id={file_id}"
     try:
@@ -40,16 +50,21 @@ def descargar_desde_drive(file_id: str, destino_local: str):
         response.raise_for_status()
         with open(destino_local, "wb") as f:
             f.write(response.content)
-        print(f"Descarga exitosa: {destino_local}")
+        print(f"✔ Descarga exitosa: {destino_local}")
     except Exception as e:
-        print(f"Error al descargar desde Drive: {e}")
+        print(f"❌ Error al descargar desde Drive: {e}")
 
-# Solo extrae el ID de cada enlace compartido
+# Descarga los recursos si no existen
 URL_WORDS_ID = "17ytyBG1Vsk1qDF8JnY_LbQij19vNYHDV"
 URL_INDEX_ID = "1aRd4Pvd44XUPz7IziZJvrt_c_FGLljy5"
 
 LOCAL_PATH1 = "data/words.json"
 LOCAL_PATH2 = "data/index.json"
 
-descargar_desde_drive(URL_WORDS_ID, LOCAL_PATH1)
-descargar_desde_drive(URL_INDEX_ID, LOCAL_PATH2)
+Path("data").mkdir(exist_ok=True)
+
+if not Path(LOCAL_PATH1).exists():
+    descargar_desde_drive(URL_WORDS_ID, LOCAL_PATH1)
+
+if not Path(LOCAL_PATH2).exists():
+    descargar_desde_drive(URL_INDEX_ID, LOCAL_PATH2)
