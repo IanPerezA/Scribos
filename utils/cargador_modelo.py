@@ -29,3 +29,27 @@ def get_model():
 
     _MODELO_CACHE[name] = (tokenizer, model)
     return tokenizer, model
+
+import requests
+
+
+def descargar_desde_drive(file_id: str, destino_local: str):
+    url = f"https://drive.google.com/uc?export=download&id={file_id}"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        with open(destino_local, "wb") as f:
+            f.write(response.content)
+        print(f"Descarga exitosa: {destino_local}")
+    except Exception as e:
+        print(f"Error al descargar desde Drive: {e}")
+
+# Solo extrae el ID de cada enlace compartido
+URL_WORDS_ID = "17ytyBG1Vsk1qDF8JnY_LbQij19vNYHDV"
+URL_INDEX_ID = "1aRd4Pvd44XUPz7IziZJvrt_c_FGLljy5"
+
+LOCAL_PATH1 = "data/words.json"
+LOCAL_PATH2 = "data/index.json"
+
+descargar_desde_drive(URL_WORDS_ID, LOCAL_PATH1)
+descargar_desde_drive(URL_INDEX_ID, LOCAL_PATH2)

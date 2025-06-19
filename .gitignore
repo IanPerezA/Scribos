@@ -14,3 +14,9 @@ model.py
 # __pycache__ y artefactos de Python
 __pycache__/
 *.py[cod]
+
+# Archivos binarios grandes y compilados
+*.dll
+*.lib
+*.pyd
+*.exe
