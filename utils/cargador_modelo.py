@@ -11,7 +11,7 @@ _MODELO_CACHE: dict[str, tuple] = {}
 def descargar_modelo_drive():
     url = settings.DRIVE_MODEL_URL
     output_zip = "modelo_beto.zip"
-
+    print("aver si carga el urkl:", url)
     if Path(output_zip).exists():
         os.remove(output_zip)
 
