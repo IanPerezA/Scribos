@@ -8,25 +8,34 @@ import requests
 
 _MODELO_CACHE: dict[str, tuple] = {}
 
+def extraer_file_id(url: str) -> str:
+    """Extrae el ID de archivo desde una URL estándar de Google Drive."""
+    if "id=" in url:
+        return url.split("id=")[1].split("&")[0]
+    elif "/d/" in url:
+        return url.split("/d/")[1].split("/")[0]
+    raise ValueError("URL de Drive no válida.")
+
 def descargar_modelo_drive():
     url = settings.DRIVE_MODEL_URL
     output_zip = "modelo_beto.zip"
-    print("aver si carga el urkl:", url)
+    file_id = extraer_file_id(url)
+
     if Path(output_zip).exists():
         os.remove(output_zip)
 
-    print("Descargando modelo desde Drive...")
-    gdown.download(url, output_zip, quiet=False)
+    print("⬇️ Descargando archivo ZIP desde Google Drive...")
+    gdown.download(id=file_id, output=output_zip, quiet=False)
 
     try:
+        print("📦 Intentando descomprimir...")
         with zipfile.ZipFile(output_zip, "r") as zip_ref:
             zip_ref.extractall(settings.LOCAL_MODEL_DIR)
-        print("Modelo extraído correctamente.")
+        print("✅ Modelo extraído correctamente.")
     except zipfile.BadZipFile:
-        print("❌ Archivo ZIP inválido. Eliminando y abortando carga.")
+        print("❌ El archivo descargado no es un archivo ZIP válido.")
         os.remove(output_zip)
         raise
-
 def get_model():
     name = settings.MODEL_NAME
     local_dir = Path(settings.LOCAL_MODEL_DIR)
