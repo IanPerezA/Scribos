@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from services.sugerencias_service import SuggestionService
 from utils.puntaje import complete
+from utils.puntaje import score_phrase
 svc = SuggestionService()
 
 def get_suggestions(patron: list[str]):
