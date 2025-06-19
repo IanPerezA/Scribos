@@ -1,75 +1,38 @@
-from pathlib import Path
-from transformers import AutoTokenizer, AutoModelForMaskedLM
-from config.config import settings
 import os
 import requests
+from transformers import AutoModelForMaskedLM, AutoTokenizer
+from config import settings
 
-_MODELO_CACHE: dict[str, tuple] = {}
-
-# Mapeo de archivos del modelo y sus IDs de Drive
 MODEL_FILES = {
-    "config.json": "1fxFzd6Sq4k_IkrgBANGUkhjIyYAW3XQs",
-    "tokenizer_config.json": "182dKzFrps8j9Km9LnVQSDFvVz1ajryxV",
-    "tokenizer.json": "1f40a9O13ZtmiinPU2kbfzPAnmYFdpQLC",
-    "vocab.txt": "1bIcjcPPa9vut_DsTZuBudnv92Zvs4-H0",
-    "special_tokens_map.json": "10IpJEw5WzwC_EYWuPGS1Qw2reNbQ8FSp",
-    "model.safetensors": "1SzSStMqjEAgnh3sEzxieu0kzs1Xkp9Jq"
+    "config.json": "1RgRZJCEw78f5DrkautcCI3URS7ybgsmF",  # config.json
+    "pytorch_model.bin": "1X1tBl7MwIDULfjQ-LRvheII-akYNFfVj"  # pytorch weights
 }
 
+def download_from_drive(file_id: str, dest_path: str):
+    """Descarga un archivo público de Google Drive por ID."""
+    print(f"⬇️ Descargando {dest_path}...")
+    URL = "https://drive.google.com/uc?export=download"
+    response = requests.get(URL, params={"id": file_id}, stream=True)
+    if response.status_code == 200:
+        with open(dest_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        print(f"✔ Descarga exitosa: {dest_path}")
+    else:
+        raise Exception(f"❌ Error al descargar {dest_path}: {response.status_code}")
 
-# Ruta donde se guardarán
-MODEL_DIR = Path(settings.LOCAL_MODEL_DIR)
-MODEL_DIR.mkdir(parents=True, exist_ok=True)
-
-def descargar_desde_drive(file_id: str, destino_local: str):
-    url = f"https://drive.google.com/uc?export=download&id={file_id}"
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        with open(destino_local, "wb") as f:
-            f.write(response.content)
-        print(f"✔ Descarga exitosa: {destino_local}")
-    except Exception as e:
-        print(f"❌ Error al descargar desde Drive: {e}")
-        raise
-
-def asegurar_modelo_descargado():
-    for nombre_archivo, file_id in MODEL_FILES.items():
-        destino = MODEL_DIR / nombre_archivo
-        if not destino.exists():
-            print(f"⬇️ Descargando {nombre_archivo}...")
-            descargar_desde_drive(file_id, str(destino))
+def ensure_model_files():
+    """Verifica y descarga los archivos necesarios si no existen."""
+    os.makedirs(settings.LOCAL_MODEL_DIR, exist_ok=True)
+    for filename, file_id in MODEL_FILES.items():
+        local_path = os.path.join(settings.LOCAL_MODEL_DIR, filename)
+        if not os.path.exists(local_path):
+            download_from_drive(file_id, local_path)
 
 def get_model():
-    name = settings.MODEL_NAME
-    if name in _MODELO_CACHE:
-        return _MODELO_CACHE[name]
-
-    asegurar_modelo_descargado()
-
-    print(f"📂 Cargando modelo desde: {MODEL_DIR}")
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
-    model = AutoModelForMaskedLM.from_pretrained(
-        MODEL_DIR,
-        from_tf=False,  # asegúrate que no intente cargar desde TF
-        trust_remote_code=False,
-        local_files_only=True
-    )
-
-    _MODELO_CACHE[name] = (tokenizer, model)
+    """Asegura y carga el modelo desde la carpeta local."""
+    ensure_model_files()
+    print(f"📂 Cargando modelo desde: {settings.LOCAL_MODEL_DIR}")
+    model = AutoModelForMaskedLM.from_pretrained(settings.LOCAL_MODEL_DIR)
+    tokenizer = AutoTokenizer.from_pretrained("dccuchile/bert-base-spanish-uncased")
     return tokenizer, model
-
-
-# --- Archivos auxiliares: palabras e índice ---
-
-EXTRAS = {
-    "data/words.json": "17ytyBG1Vsk1qDF8JnY_LbQij19vNYHDV",
-    "data/index.json": "1aRd4Pvd44XUPz7IziZJvrt_c_FGLljy5"
-}
-
-Path("data").mkdir(exist_ok=True)
-
-for ruta, file_id in EXTRAS.items():
-    if not Path(ruta).exists():
-        print(f"⬇️ Descargando archivo auxiliar: {ruta}")
-        descargar_desde_drive(file_id, ruta)

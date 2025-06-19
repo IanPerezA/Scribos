@@ -20,3 +20,5 @@ __pycache__/
 *.lib
 *.pyd
 *.exe
+beto_model_bin/
+modelo_beto_bin/
