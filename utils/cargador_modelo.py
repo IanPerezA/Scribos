@@ -43,20 +43,28 @@ def get_model():
     if name in _MODELO_CACHE:
         return _MODELO_CACHE[name]
 
-    # Si el directorio no existe o está vacío, descarga el modelo
+    # Descargar si no existe o está vacío
     if not base_dir.exists() or not any(base_dir.iterdir()):
         descargar_modelo_drive()
 
-    # Detectar si hay una única subcarpeta (por ejemplo "modelo_beto")
-    subdirs = [d for d in base_dir.iterdir() if d.is_dir()]
-    model_dir = subdirs[0] if len(subdirs) == 1 else base_dir
+    # Buscar recursivamente la carpeta que contenga los archivos del modelo
+    posibles_dirs = []
+    for root, dirs, files in os.walk(base_dir):
+        if {"config.json", "pytorch_model.bin", "tokenizer_config.json"}.intersection(files):
+            posibles_dirs.append(Path(root))
 
-    # Cargar el modelo desde la ruta detectada
+    if not posibles_dirs:
+        raise RuntimeError(" No se encontró una carpeta válida con archivos del modelo.")
+
+    model_dir = posibles_dirs[0]  # Usa la primera carpeta válida encontrada
+
+    print(f"📂 Cargando modelo desde: {model_dir}")
     tokenizer = AutoTokenizer.from_pretrained(model_dir)
     model = AutoModelForMaskedLM.from_pretrained(model_dir)
 
     _MODELO_CACHE[name] = (tokenizer, model)
     return tokenizer, model
+
 
 
 def descargar_desde_drive(file_id: str, destino_local: str):
