@@ -8,13 +8,14 @@ _MODELO_CACHE: dict[str, tuple] = {}
 
 # Mapeo de archivos del modelo y sus IDs de Drive
 MODEL_FILES = {
-    "config.json": "1SzSStMqjEAgnh3sEzxieu0kzs1Xkp9Jq",  # model.safetensors
+    "config.json": "1fxFzd6Sq4k_IkrgBANGUkhjIyYAW3XQs",
     "tokenizer_config.json": "182dKzFrps8j9Km9LnVQSDFvVz1ajryxV",
     "tokenizer.json": "1f40a9O13ZtmiinPU2kbfzPAnmYFdpQLC",
     "vocab.txt": "1bIcjcPPa9vut_DsTZuBudnv92Zvs4-H0",
     "special_tokens_map.json": "10IpJEw5WzwC_EYWuPGS1Qw2reNbQ8FSp",
     "model.safetensors": "1SzSStMqjEAgnh3sEzxieu0kzs1Xkp9Jq"
 }
+
 
 # Ruta donde se guardarán
 MODEL_DIR = Path(settings.LOCAL_MODEL_DIR)
