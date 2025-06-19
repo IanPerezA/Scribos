@@ -49,10 +49,16 @@ def get_model():
 
     print(f"📂 Cargando modelo desde: {MODEL_DIR}")
     tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
-    model = AutoModelForMaskedLM.from_pretrained(MODEL_DIR)
+    model = AutoModelForMaskedLM.from_pretrained(
+        MODEL_DIR,
+        from_tf=False,  # asegúrate que no intente cargar desde TF
+        trust_remote_code=False,
+        local_files_only=True
+    )
 
     _MODELO_CACHE[name] = (tokenizer, model)
     return tokenizer, model
+
 
 # --- Archivos auxiliares: palabras e índice ---
 
