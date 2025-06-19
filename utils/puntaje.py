@@ -1,3 +1,4 @@
+# utils/puntaje.py
 import torch
 from utils.cargador_modelo import get_model
 
@@ -41,7 +42,6 @@ def complete(masked_phrase: str) -> str:
     decoded_sentence = tokenizer.decode(predicted_tokens, skip_special_tokens=True)
     return decoded_sentence
 
-
 def match_pattern(word: str, pattern: str) -> bool:
     """Verifica si una palabra coincide con un patrón tipo a*t*"""
     if len(word) != len(pattern):
@@ -49,7 +49,7 @@ def match_pattern(word: str, pattern: str) -> bool:
     return all(pc == "*" or pc == wc for pc, wc in zip(pattern, word))
 
 def predict_masked_word(masked_text: str, original_pattern: str, top_k=20) -> list[str]:
-    top_k = int(top_k)  # asegurar que sea entero
+    top_k = int(top_k)
 
     inputs = tokenizer(masked_text, return_tensors="pt")
     mask_token_index = torch.where(inputs["input_ids"] == tokenizer.mask_token_id)[1]
@@ -63,5 +63,4 @@ def predict_masked_word(masked_text: str, original_pattern: str, top_k=20) -> li
 
     candidates = [tokenizer.decode([t]).strip() for t in top_tokens]
     filtered = [w for w in candidates if match_pattern(w, original_pattern)]
-
     return filtered

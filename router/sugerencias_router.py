@@ -1,3 +1,5 @@
+# router/sugerencias_router.py
+
 from fastapi import APIRouter
 from pydantic import BaseModel
 from utils.puntaje import score_phrase
@@ -17,17 +19,13 @@ def suggest(req: SuggestReq):
     words = get_suggestions(req.pattern)
     phrases = [f"{req.phrase} {s}" for s in words]
 
-    # Calcular score BETO para cada frase
+    # Aquí usamos score_phrase para ordenar
     scored_phrases = [(phrase, score_phrase(phrase)) for phrase in phrases]
-
-    # Ordenar descendente por score (más probable primero)
     scored_phrases.sort(key=lambda x: x[1], reverse=True)
-
-    recomendation = [p[0] for p in scored_phrases]
-
-    return recomendation[0:5]
+    return [p for p, _ in scored_phrases][:5]
 
 @router.post("/complete", response_model=list[str])
 def complete(req: CompleteReq):
-    result = get_complete_suggestion(req.phrase)
-    return [result]  # se envuelve como lista por compatibilidad
+    # Este endpoint llama a get_complete_suggestion (no usa score_phrase)
+    completed = get_complete_suggestion(req.phrase)
+    return [completed]

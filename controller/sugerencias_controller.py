@@ -55,31 +55,31 @@ def get_suggestions(patron: list[str]):
     
 from utils.puntaje import predict_masked_word
 
-def get_complete_suggestion(phrase):
-    try:
-        words = phrase.split()
-        completed_words = []
+def get_complete_suggestion(phrase: str) -> str:
+    words = phrase.split()
+    phrases = [""]
 
-        for word in words:
-            if "*" not in word:
-                completed_words.append(word)
-                continue
+    for word in words:
+        if "*" in word:
+            # Construye patrón para el indexador (lista de chars o '')
+            pattern = [c if c != "*" else "" for c in word]
+            # Obtiene sugerencias de palabras que encajan en ese patrón
+            suggestions = get_suggestions(pattern)
 
-            pattern = word
-            masked_phrase = phrase.replace(word, "[MASK]", 1)
+            # Expande todas las combinaciones posibles
+            new_phrases = []
+            for base in phrases:
+                for s in suggestions:
+                    new_phrases.append((base + " " + s).strip())
+            phrases = new_phrases
 
-            predictions = predict_masked_word(masked_phrase, pattern, top_k=50)
+        else:
+            # Si la palabra no tiene '*', la agrego tal cual
+            phrases = [(base + " " + word).strip() for base in phrases]
 
-            print("🔍 pattern:", pattern)
-            print("🔍 masked phrase:", masked_phrase)
-            print("🔍 predictions:", predictions)
+    # Por cada frase candidata calculo su score de probabilidad y ordeno
+    scored = [(p, score_phrase(p)) for p in phrases]
+    scored.sort(key=lambda x: x[1], reverse=True)
 
-            if predictions:
-                completed_words.append(predictions[0])  # Top-1
-            else:
-                completed_words.append(word)
-
-        return " ".join(completed_words)
-
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    # Devuelvo solo la mejor (o top-N si quieres)
+    return scored[0][0]
