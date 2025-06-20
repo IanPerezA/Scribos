@@ -7,9 +7,12 @@ app = FastAPI(title="Scribos API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],     
-    allow_methods=["*"],     
-    allow_headers=["*"],     
+    allow_origins=[
+        "https://scribos-front.vercel.app",
+        "http://localhost:3000",
+    ],
+    allow_methods=["*"],
+    allow_headers=["*"],
     allow_credentials=True, 
 )
 
